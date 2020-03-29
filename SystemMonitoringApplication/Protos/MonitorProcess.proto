@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+option csharp_namespace = "SystemMonitoringApplication";
+
+package MonitorProcess;
+
+service ProcessMonitor {
+  rpc GetProcessStates (Empty) returns (ProcessStates);
+}
+message Empty {
+}
+
+message ProcessStates {
+	message ProcessState {
+	/// <summary>
+	/// Идентификатор процесса
+	/// </summary>
+	int32 ProcessId = 1;
+
+	/// <summary>
+	/// Наименование процесса
+	/// </summary>
+	string ProcessName = 2;
+
+	/// <summary>
+	/// Процент использования CPU
+	/// </summary>
+	double Cpu = 3;
+
+	/// <summary>
+	/// Количество используемой памяти в Mb
+	/// </summary>
+	double Memory = 4;
+	}
+/// <summary>
+/// Колекция состояний процессов
+/// </summary>
+repeated ProcessState processStates = 1;
+}
+
+
+
