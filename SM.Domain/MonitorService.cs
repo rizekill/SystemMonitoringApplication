@@ -4,30 +4,33 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SM.Domain.Interfaces;
 
 namespace SM.Domain
 {
     /// <summary>
     /// Сервис мониторинга процессов и состояния системы
     /// </summary>
-    public class MonitorService
+    public class MonitorService<TMonitorSystemInfo, TProcessStateHandler> : IMonitorService
+        where TMonitorSystemInfo : MonitorSystemInfoBase, new()
+        where TProcessStateHandler : ProcessStateHandlerBase, new()
     {
         public MonitorService()
         {
-            ObservedProcesses = new ConcurrentDictionary<string, ProcessStateHandler>();
-            MonitorSystemInfo = new MonitorSystemInfo();
+            ObservedProcesses = new ConcurrentDictionary<string, ProcessStateHandlerBase>();
+            MonitorSystemInfo = new TMonitorSystemInfo();
             MonitorSystemInfo.OnHighLoaded += OnHighLoaded;
         }
 
         /// <summary>
         ///  Список отслеживаемых процессов
         /// </summary>
-        public readonly ConcurrentDictionary<string, ProcessStateHandler> ObservedProcesses;
+        public readonly ConcurrentDictionary<string, ProcessStateHandlerBase> ObservedProcesses;
 
         /// <summary>
         /// Системная информация
         /// </summary>
-        public MonitorSystemInfo MonitorSystemInfo;
+        public TMonitorSystemInfo MonitorSystemInfo;
 
         /// <summary>
         /// Срабатывает при появлении высокой нагрузки 
@@ -49,58 +52,62 @@ namespace SM.Domain
         /// </summary>
         public event EventHandler OnProcessObserveClosed;
 
-        public void Run(CancellationToken cancellationToken)
-        {   //запускаем постоянное обновление состояний в фоновой задаче
-            Task.Run(() => RunStateRefresher(cancellationToken));
+        /// <summary>
+        /// Запуск мониторинга
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task Start(CancellationToken cancellationToken)
+        {
+            //запускаем постоянное обновление состояний
+            RunStateRefresher(cancellationToken);
 
-            while (!cancellationToken.IsCancellationRequested)
-            {   // получаем список имен активных процессов 
-                var activeProcessNames = ObservedProcesses.Values.Select(s => s.ProcessState.ProcessName);
-                // берем только новые
-                var newProcesses = Process.GetProcesses()
-                    .Where(x => !activeProcessNames.Contains(x.ProcessName));
+            //запускаем добавление новых процессов для наблюдения
+            return RunAddingNewObservedProcesses(cancellationToken);
+        }
 
-                foreach (var currentProcess in newProcesses)
-                {
-                    // создаем обаботчик процесса
-                    var processHandler = new ProcessStateHandler(currentProcess);
+        /// <summary>
+        /// Остановить мониторинг
+        /// </summary>
+        public void Stop()
+        {
+            MonitorSystemInfo.OnHighLoaded -= OnHighLoaded;
 
-                    if (!ObservedProcesses.TryAdd(currentProcess.ProcessName, processHandler))
-                        continue;
+            foreach (var observedProcess in ObservedProcesses)
+                CloseProcessObserver(processName: observedProcess.Key);
+        }
 
-                    // оповещаем о старте наблюдения за процессом
-                    OnProcessObserveOpened?.Invoke(processHandler.ProcessState, EventArgs.Empty);
+        /// <summary>
+        /// Завершение процесса
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnCloseProcess(object sender, EventArgs e)
+        {
+            var processName = sender switch
+            {
+                TProcessStateHandler handler => handler.ProcessState.ProcessName,
+                Process process => process.ProcessName,
+                _ => throw new ArgumentException(
+                    $"Не предусмотрена обработка типа: {sender.GetType().Name} при завершении наблюдения за процессом")
+            };
 
-                    // подписываемся на событие обновления состояния процесса
-                    processHandler.OnStateRefreshed += OnProcessStateUpdated;
-
-                    // подписываемся на события для завершение наблюдения 
-                    processHandler.OnClosed += CloseProcessObserver;
-                    currentProcess.Disposed += CloseProcessObserver;
-                }
-            }
+            // Убираем процесс из наблюдения
+            CloseProcessObserver(processName);
         }
 
         /// <summary>
         /// Завершить наблюдение за процессом
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void CloseProcessObserver(object sender, EventArgs e)
+        /// <param name="processName">Наименование процесса</param>
+        private void CloseProcessObserver(string processName)
         {
-            var processName = sender switch
-            {
-                ProcessStateHandler handler => handler.ProcessState.ProcessName,
-                Process process => process.ProcessName,
-                _ => throw new ArgumentException($"Не предусмотрена обработка типа: {sender.GetType().Name} при завершении наблюдения за процессом")
-            };
-
             // Убираем процесс из наблюдения
             if (!ObservedProcesses.TryRemove(processName, out var processHandler))
                 return;
 
             processHandler.OnStateRefreshed -= OnProcessStateUpdated;
-            processHandler.OnClosed -= CloseProcessObserver;
+            processHandler.OnClosed -= OnCloseProcess;
             //оповещаем о завершении наблюдения за процессом
             OnProcessObserveClosed?.Invoke(processHandler.ProcessState.ProcessName, EventArgs.Empty);
         }
@@ -110,16 +117,54 @@ namespace SM.Domain
         /// </summary>
         /// <param name="cancellationToken"></param>
         private void RunStateRefresher(CancellationToken cancellationToken)
-        {
-            while (!cancellationToken.IsCancellationRequested)
-                foreach (var process in ObservedProcesses)
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                        return;
+            => Task.Run(() =>
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                    foreach (var process in ObservedProcesses)
+                    {
+                        if (cancellationToken.IsCancellationRequested)
+                            return;
 
-                    process.Value.RefreshState();
-                    MonitorSystemInfo.Refresh();
+                        process.Value.RefreshState();
+                        MonitorSystemInfo.Refresh();
+                    }
+            });
+
+        /// <summary>
+        /// Запустить добавление новых процессов для мониторинга
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        private Task RunAddingNewObservedProcesses(CancellationToken cancellationToken)
+            => Task.Run(() =>
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    // получаем список имен активных процессов 
+                    var activeProcessNames = ObservedProcesses.Values.Select(s => s.ProcessState.ProcessName);
+                    // берем только новые
+                    var newProcesses = Process.GetProcesses()
+                        .Where(x => !activeProcessNames.Contains(x.ProcessName));
+
+                    foreach (var currentProcess in newProcesses)
+                    {
+                        // создаем обработчик процесса
+                        var processHandler = new TProcessStateHandler()
+                            .Initialize(currentProcess.Id, currentProcess.ProcessName);
+
+                        if (!ObservedProcesses.TryAdd(currentProcess.ProcessName, processHandler))
+                            continue;
+
+                        // оповещаем о старте наблюдения за процессом
+                        OnProcessObserveOpened?.Invoke(processHandler.ProcessState, EventArgs.Empty);
+
+                        // подписываемся на событие обновления состояния процесса
+                        processHandler.OnStateRefreshed += OnProcessStateUpdated;
+
+                        // подписываемся на события для завершение наблюдения 
+                        processHandler.OnClosed += OnCloseProcess;
+                        currentProcess.Disposed += OnCloseProcess;
+                    }
                 }
-        }
+            });
     }
 }

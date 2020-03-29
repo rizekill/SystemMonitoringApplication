@@ -1,36 +1,32 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using SM.Model;
+using SM.Domain;
 
-namespace SM.Domain
+namespace SM.Windows
 {
     /// <summary>
     /// Модель содержит информацию о состоянии системы
     /// </summary>
-    public class MonitorSystemInfo
+    public class MonitorSystemInfo : MonitorSystemInfoBase
     {
         public MonitorSystemInfo()
         {
-            SystemInfo = new SystemInfo();
             _cpuPerformanceCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
             _ramPerformanceCounter = new PerformanceCounter("Memory", "Available MBytes");
-
-            Refresh();
-
         }
 
         /// <summary>
         /// Оповещает о высокой нагрузке
         /// </summary>
-        public event EventHandler OnHighLoaded;
+        public override event EventHandler OnHighLoaded;
 
         /// <summary>
         /// Обновить состояние
         /// </summary>
-        public void Refresh()
+        public override void Refresh()
         {
-            SystemInfo.TotalCpuUsagePercent = Math.Round(_cpuPerformanceCounter.NextValue(), 2);
+            SystemInfo.TotalCpuUsagePercent = Math.Round((double)_cpuPerformanceCounter.NextValue(), 2);
 
             //Получаем количество установленной памяти в kb
             GetPhysicallyInstalledSystemMemory(out var totalMemoryKb);
@@ -65,9 +61,7 @@ namespace SM.Domain
 
         private readonly PerformanceCounter _cpuPerformanceCounter;
         private readonly PerformanceCounter _ramPerformanceCounter;
-        private readonly SystemInfo SystemInfo;
-
-
+        
         /// <summary>
         /// Получить количество установленной оперативной памяти
         /// </summary>
