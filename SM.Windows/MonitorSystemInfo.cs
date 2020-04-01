@@ -26,7 +26,7 @@ namespace SM.Windows
         /// </summary>
         public override void Refresh()
         {
-            SystemInfo.TotalCpuUsagePercent = Math.Round((double)_cpuPerformanceCounter.NextValue(), 2);
+            SystemInfo.TotalCpuUsagePercent = Math.Round(_cpuPerformanceCounter.NextValue(), 2);
 
             //Получаем количество установленной памяти в kb
             GetPhysicallyInstalledSystemMemory(out var totalMemoryKb);
