@@ -48,9 +48,9 @@ namespace SM.Windows
         {
             //если процент нагрузки выше порогового значения
             if (SystemInfo.TotalCpuUsagePercent > HighLoadPercentage
-            && SystemInfo.TotalMemoryUsagePercent > HighLoadPercentage)
+            || SystemInfo.TotalMemoryUsagePercent > HighLoadPercentage)
             {// оповещаем о высокой нагрузке
-                OnHighLoaded?.Invoke(sender: this, EventArgs.Empty);
+                OnHighLoaded?.Invoke(this, EventArgs.Empty);
             }
         }
 

@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SM.Model</name>
+    </assembly>
+    <members>
+        <member name="T:SM.Model.ProcessState">
+            <summary>
+            Состоянии процесса системы
+            </summary>
+        </member>
+        <member name="M:SM.Model.ProcessState.#ctor(System.Int32,System.String)">
+            <summary>
+            Конструктор
+            </summary>
+            <param name="processId"></param>
+            <param name="processName"></param>
+        </member>
+        <member name="P:SM.Model.ProcessState.ProcessId">
+            <summary>
+            Идентификатор процесса
+            </summary>
+        </member>
+        <member name="P:SM.Model.ProcessState.ProcessName">
+            <summary>
+            Наименование процесса
+            </summary>
+        </member>
+        <member name="P:SM.Model.ProcessState.Cpu">
+            <summary>
+            Процент использования CPU
+            </summary>
+        </member>
+        <member name="P:SM.Model.ProcessState.Memory">
+            <summary>
+            Количество используемой памяти в Mb
+            </summary>
+        </member>
+        <member name="T:SM.Model.SystemInfo">
+            <summary>
+            Системная информация
+            </summary>
+        </member>
+        <member name="P:SM.Model.SystemInfo.TotalCpuUsagePercent">
+            <summary>
+            Общий процент использования Cpu
+            </summary>
+        </member>
+        <member name="P:SM.Model.SystemInfo.TotalMemoryUsagePercent">
+            <summary>
+            Общий процент использование оперативной памяти
+            </summary>
+        </member>
+        <member name="P:SM.Model.SystemInfo.TotalMemoryUsageMb">
+            <summary>
+            Общее количество используемой оперативной памяти Mb 
+            </summary>
+        </member>
+    </members>
+</doc>

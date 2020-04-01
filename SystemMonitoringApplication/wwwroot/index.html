@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Task Viewer</title>
+</head>
+<body>
+
+<br/>
+<script type="text/javascript">
+    function connect() {
+        var uri = "ws://localhost:63572/ws";
+        socket = new WebSocket(uri);
+
+        socket.onopen = function (e) {
+        console.log("Connection established");
+        }
+        socket.onclose = function(e) {
+            console.log("Connection closed");
+        };
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            if (data.MessageType === 'HighLoadEvent') {
+            }
+        };
+    }
+
+    connect();
+</script>
+</body>
+</html>

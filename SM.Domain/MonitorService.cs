@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SM.Contracts.Events;
+using SM.Core;
 using SM.Domain.Interfaces;
 using SM.Model;
 
@@ -17,11 +19,12 @@ namespace SM.Domain
         where TMonitorSystemInfo : MonitorSystemInfoBase, new()
         where TProcessStateHandler : ProcessStateHandlerBase, new()
     {
-        public MonitorService()
+        public MonitorService(IMessageProcessor messageProcessor)
         {
+            _messageProcessor = messageProcessor;
             _observedProcesses = new ConcurrentDictionary<string, ProcessStateHandlerBase>();
             MonitorSystemInfo = new TMonitorSystemInfo();
-            MonitorSystemInfo.OnHighLoaded += OnHighLoaded;
+
         }
 
         /// <summary>
@@ -30,24 +33,9 @@ namespace SM.Domain
         public TMonitorSystemInfo MonitorSystemInfo;
 
         /// <summary>
-        /// Срабатывает при появлении высокой нагрузки 
+        /// Обработчик сообщений
         /// </summary>
-        public event EventHandler OnHighLoaded;
-
-        /// <summary>
-        /// Срабатывает при старте наблюдения за процессом
-        /// </summary>
-        public event EventHandler OnProcessObserveOpened;
-
-        /// <summary>
-        /// Срабатывает при обновлении состояния процесса
-        /// </summary>
-        public event EventHandler OnProcessStateUpdated;
-
-        /// <summary>
-        /// Срабатывает при завершении наблюдения за процессом
-        /// </summary>
-        public event EventHandler OnProcessObserveClosed;
+        private readonly IMessageProcessor _messageProcessor;
 
         /// <summary>
         ///  Список отслеживаемых процессов
@@ -61,6 +49,8 @@ namespace SM.Domain
         /// <returns></returns>
         public Task Start(CancellationToken cancellationToken)
         {
+            MonitorSystemInfo.OnHighLoaded += OnHighLoad;
+
             //запускаем постоянное обновление состояний
             RunStateRefresher(cancellationToken);
 
@@ -73,7 +63,7 @@ namespace SM.Domain
         /// </summary>
         public void Stop()
         {
-            MonitorSystemInfo.OnHighLoaded -= OnHighLoaded;
+            MonitorSystemInfo.OnHighLoaded -= OnHighLoad;
 
             foreach (var observedProcess in _observedProcesses)
                 CloseProcessObserver(processName: observedProcess.Key);
@@ -87,41 +77,6 @@ namespace SM.Domain
                 .Select(x => x.ProcessState)
                 .ToList()
                 .AsReadOnly();
-
-        /// <summary>
-        /// Завершение процесса
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnCloseProcess(object sender, EventArgs e)
-        {
-            var processName = sender switch
-            {
-                TProcessStateHandler handler => handler.ProcessState.ProcessName,
-                Process process => process.ProcessName,
-                _ => throw new ArgumentException(
-                    $"Не предусмотрена обработка типа: {sender.GetType().Name} при завершении наблюдения за процессом")
-            };
-
-            // Убираем процесс из наблюдения
-            CloseProcessObserver(processName);
-        }
-
-        /// <summary>
-        /// Завершить наблюдение за процессом
-        /// </summary>
-        /// <param name="processName">Наименование процесса</param>
-        private void CloseProcessObserver(string processName)
-        {
-            // Убираем процесс из наблюдения
-            if (!_observedProcesses.TryRemove(processName, out var processHandler))
-                return;
-
-            processHandler.OnStateRefreshed -= OnProcessStateUpdated;
-            processHandler.OnClosed -= OnCloseProcess;
-            //оповещаем о завершении наблюдения за процессом
-            OnProcessObserveClosed?.Invoke(processHandler.ProcessState.ProcessName, EventArgs.Empty);
-        }
 
         /// <summary>
         /// Запустить процесс обновления состояния процессов
@@ -166,10 +121,10 @@ namespace SM.Domain
                             continue;
 
                         // оповещаем о старте наблюдения за процессом
-                        OnProcessObserveOpened?.Invoke(processHandler.ProcessState, EventArgs.Empty);
+                        _messageProcessor.Publish(new ProcessObserveOpenEvent(processHandler.ProcessState));
 
                         // подписываемся на событие обновления состояния процесса
-                        processHandler.OnStateRefreshed += OnProcessStateUpdated;
+                        processHandler.OnStateRefreshed += OnProcessStateUpdate;
 
                         // подписываемся на события для завершение наблюдения 
                         processHandler.OnClosed += OnCloseProcess;
@@ -177,5 +132,58 @@ namespace SM.Domain
                     }
                 }
             });
+
+        ///// <summary>
+        ///// Срабатывает при появлении высокой нагрузки 
+        ///// </summary>
+        private void OnHighLoad(object sender, EventArgs e)
+        {
+            if (sender is TMonitorSystemInfo monitorSystemInfo)
+                _messageProcessor.Publish(new HighLoadEvent(monitorSystemInfo.SystemInfo));
+        }
+
+        ///// <summary>
+        ///// Срабатывает при обновлении состояния процесса
+        ///// </summary>
+        private void OnProcessStateUpdate(object sender, EventArgs e)
+        {
+            if (sender is TProcessStateHandler processStateHandler)
+                _messageProcessor.Publish(new ProcessStateUpdateEvent(processStateHandler.ProcessState));
+        }
+
+        /// <summary>
+        /// Завершение процесса
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnCloseProcess(object sender, EventArgs e)
+        {
+            var processName = sender switch
+            {
+                TProcessStateHandler handler => handler.ProcessState.ProcessName,
+                Process process => process.ProcessName,
+                _ => throw new ArgumentException(
+                    $"Не предусмотрена обработка типа: {sender.GetType().Name} при завершении наблюдения за процессом")
+            };
+
+            // Убираем процесс из наблюдения
+            CloseProcessObserver(processName);
+        }
+
+        /// <summary>
+        /// Завершить наблюдение за процессом
+        /// </summary>
+        /// <param name="processName">Наименование процесса</param>
+        private void CloseProcessObserver(string processName)
+        {
+            // Убираем процесс из наблюдения
+            if (!_observedProcesses.TryRemove(processName, out var processHandler))
+                return;
+
+            processHandler.OnStateRefreshed -= OnProcessStateUpdate;
+            processHandler.OnClosed -= OnCloseProcess;
+            //оповещаем о завершении наблюдения за процессом
+            _messageProcessor.Publish(new ProcessObserveCompleteEvent(processHandler.ProcessState));
+        }
     }
 }

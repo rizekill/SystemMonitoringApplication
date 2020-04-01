@@ -37,9 +37,9 @@ namespace SM.Windows
         {
             try
             {
-                ProcessState.Cpu = Math.Round((double)(_cpuPerformanceCounter.NextValue() / Environment.ProcessorCount), 2);
+                ProcessState.Cpu = Math.Round(_cpuPerformanceCounter.NextValue() / Environment.ProcessorCount, 2);
                 //приводим к Mb
-                ProcessState.Memory = Math.Round((double)(_ramPerformanceCounter.NextValue() / 1024 / 1024), 2);
+                ProcessState.Memory = Math.Round(_ramPerformanceCounter.NextValue() / 1024 / 1024, 2);
 
                 OnStateRefreshed?.Invoke(this, EventArgs.Empty);
             }

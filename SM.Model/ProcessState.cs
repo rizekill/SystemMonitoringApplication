@@ -5,6 +5,11 @@
     /// </summary>
     public class ProcessState
     {
+        /// <summary>
+        /// Конструктор
+        /// </summary>
+        /// <param name="processId"></param>
+        /// <param name="processName"></param>
         public ProcessState(int processId, string processName)
         {
             ProcessId = processId;
@@ -30,8 +35,5 @@
         /// Количество используемой памяти в Mb
         /// </summary>
         public double Memory { get; set; }
-
-        public override string ToString()
-            => $"ProcessName: \t{ProcessName} \tPID: \t{ProcessId} \tCPU: \t{Cpu}  \tMemory: \t{Memory}";
     }
 }

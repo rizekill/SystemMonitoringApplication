@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SM.Contracts</name>
+    </assembly>
+    <members>
+        <member name="T:SM.Contracts.Commands.SubscribeCommand">
+            <summary>
+            Команда для подписки на тип сообщения
+            </summary>
+        </member>
+        <member name="P:SM.Contracts.Commands.SubscribeCommand.MessageType">
+            <summary>
+            Тип сообщения
+            </summary>
+        </member>
+        <member name="T:SM.Contracts.Commands.UnsubscribeCommand">
+            <summary>
+            Команда для подписки на тип сообщения
+            </summary>
+        </member>
+        <member name="P:SM.Contracts.Commands.UnsubscribeCommand.MessageType">
+            <summary>
+            Тип сообщения
+            </summary>
+        </member>
+        <member name="T:SM.Contracts.Events.HighLoadEvent">
+            <summary>
+            Событие о высокой нагрузке в системе
+            </summary>
+        </member>
+        <member name="M:SM.Contracts.Events.HighLoadEvent.#ctor(SM.Model.SystemInfo)">
+            <summary>
+            Конструктор
+            </summary>
+            <param name="systemInfo"></param>
+        </member>
+        <member name="P:SM.Contracts.Events.HighLoadEvent.SystemInfo">
+            <summary>
+            Системная информация
+            </summary>
+        </member>
+        <member name="T:SM.Contracts.Events.ProcessObserveCompleteEvent">
+            <summary>
+            Событие о завершении наблюдения за процессом
+            </summary>
+        </member>
+        <member name="M:SM.Contracts.Events.ProcessObserveCompleteEvent.#ctor(SM.Model.ProcessState)">
+            <summary>
+            Конструктор
+            </summary>
+        </member>
+        <member name="P:SM.Contracts.Events.ProcessObserveCompleteEvent.ProcessState">
+            <summary>
+            Состояние процесса
+            </summary>
+        </member>
+        <member name="T:SM.Contracts.Events.ProcessObserveOpenEvent">
+            <summary>
+            Событие о начале наблюдения за процессом
+            </summary>
+        </member>
+        <member name="M:SM.Contracts.Events.ProcessObserveOpenEvent.#ctor(SM.Model.ProcessState)">
+            <summary>
+            Конструктор
+            </summary>
+        </member>
+        <member name="P:SM.Contracts.Events.ProcessObserveOpenEvent.ProcessState">
+            <summary>
+            Состояние процесса
+            </summary>
+        </member>
+        <member name="T:SM.Contracts.Events.ProcessStateUpdateEvent">
+            <summary>
+            Событие об обновлении состояния процесса
+            </summary>
+        </member>
+        <member name="M:SM.Contracts.Events.ProcessStateUpdateEvent.#ctor(SM.Model.ProcessState)">
+            <summary>
+            Конструктор
+            </summary>
+        </member>
+        <member name="P:SM.Contracts.Events.ProcessStateUpdateEvent.ProcessState">
+            <summary>
+            Состояние процесса
+            </summary>
+        </member>
+    </members>
+</doc>
