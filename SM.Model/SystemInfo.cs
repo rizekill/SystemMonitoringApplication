@@ -1,4 +1,4 @@
-﻿namespace SM.Model
+namespace SM.Model
 {
     /// <summary>
     /// Системная информация

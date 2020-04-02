@@ -1,4 +1,4 @@
-﻿namespace SM.Core
+namespace SM.Core
 {
     /// <summary>
     /// Интерфейс сообщения

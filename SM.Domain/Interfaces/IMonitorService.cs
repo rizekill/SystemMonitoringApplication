@@ -8,17 +8,17 @@ namespace SM.Domain.Interfaces
     public interface IMonitorService
     {
         /// <summary>
-        /// Запуск мониторинга
+        /// Р—Р°РїСѓСЃРє РјРѕРЅРёС‚РѕСЂРёРЅРіР°
         /// </summary>
         Task Start(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Остановить мониторинг
+        /// РћСЃС‚Р°РЅРѕРІРёС‚СЊ РјРѕРЅРёС‚РѕСЂРёРЅРі
         /// </summary>
         void Stop();
 
         /// <summary>
-        /// Получить состояния процессов
+        /// РџРѕР»СѓС‡РёС‚СЊ СЃРѕСЃС‚РѕСЏРЅРёСЏ РїСЂРѕС†РµСЃСЃРѕРІ
         /// </summary>
         IReadOnlyCollection<ProcessState> GetProcessStates();
     }

@@ -1,4 +1,4 @@
-﻿using SM.Core;
+using SM.Core;
 using SM.Model;
 
 namespace SM.Contracts.Events

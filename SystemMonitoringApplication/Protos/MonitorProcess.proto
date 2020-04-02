@@ -2,36 +2,40 @@ syntax = "proto3";
 
 option csharp_namespace = "SystemMonitoringApplication";
 import "google/protobuf/empty.proto";
+
 package MonitorProcess;
 
 service ProcessMonitor {
+	/// <summary>
+	/// Р—Р°РїСЂРѕСЃРёС‚СЊ СЃРѕСЃС‚РѕСЏРЅРёСЏ РїСЂРѕС†РµСЃСЃРѕРІ
+	/// </summary>
   rpc GetProcessStates (google.protobuf.Empty) returns (ProcessStates);
 }
 
 message ProcessStates {
 	message ProcessState {
 	/// <summary>
-	/// Идентификатор процесса
+	/// РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РїСЂРѕС†РµСЃСЃР°
 	/// </summary>
 	int32 ProcessId = 1;
 
 	/// <summary>
-	/// Наименование процесса
+	/// РќР°РёРјРµРЅРѕРІР°РЅРёРµ РїСЂРѕС†РµСЃСЃР°
 	/// </summary>
 	string ProcessName = 2;
 
 	/// <summary>
-	/// Процент использования CPU
+	/// РџСЂРѕС†РµРЅС‚ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ CPU
 	/// </summary>
 	double Cpu = 3;
 
 	/// <summary>
-	/// Количество используемой памяти в Mb
+	/// РљРѕР»РёС‡РµСЃС‚РІРѕ РёСЃРїРѕР»СЊР·СѓРµРјРѕР№ РїР°РјСЏС‚Рё РІ Mb
 	/// </summary>
 	double Memory = 4;
 	}
 /// <summary>
-/// Колекция состояний процессов
+/// РљРѕР»РµРєС†РёСЏ СЃРѕСЃС‚РѕСЏРЅРёР№ РїСЂРѕС†РµСЃСЃРѕРІ
 /// </summary>
 repeated ProcessState processStates = 1;
 }

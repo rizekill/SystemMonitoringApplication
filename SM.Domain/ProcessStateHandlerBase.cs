@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using SM.Model;
 
 namespace SM.Domain

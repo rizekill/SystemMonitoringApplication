@@ -1,4 +1,4 @@
-﻿using SM.Core;
+using SM.Core;
 
 namespace SM.Contracts.Commands
 {

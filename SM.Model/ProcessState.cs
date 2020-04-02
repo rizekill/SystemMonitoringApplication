@@ -1,4 +1,4 @@
-﻿namespace SM.Model
+namespace SM.Model
 {
     /// <summary>
     /// Состоянии процесса системы
