@@ -1,32 +1,82 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <meta charset="utf-8" />
-    <title>Task Viewer</title>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tasks Monitoring</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+  <link href="css/styles-min.css" rel="stylesheet">
+
+
 </head>
-<body>
 
-<br/>
-<script type="text/javascript">
-    function connect() {
-        var uri = "ws://localhost:63572/ws";
-        socket = new WebSocket(uri);
+<body id="page-top">
 
-        socket.onopen = function (e) {
-        console.log("Connection established");
-        }
-        socket.onclose = function(e) {
-            console.log("Connection closed");
-        };
-        socket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            
-            if (data.MessageType === 'HighLoadEvent') {
-            }
-        };
-    }
+    <!-- Page Wrapper -->
+<div id="wrapper">
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
 
-    connect();
-</script>
+        <!-- Main Content -->
+        <div id="content">
+            <!-- Begin Page Content -->
+            <div class="container-fluid">
+
+                <!-- Page Heading -->
+                <h1 class="h3 mb-2 text-gray-800">Tasks Monitoring</h1>
+
+                <!-- DataTales Example -->
+                <div class="card shadow mb-4">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="dataTable" width="80%" cellspacing="0">
+                                <thead>
+                                <tr>
+                                    <th>ProcessId</th>
+                                    <th>ProcessName</th>
+                                    <th>Cpu(%)</th>
+                                    <th>Memory(Mb)</th>
+                                </tr>
+                                </thead>
+                                <tfoot>
+                                <tr>
+                                    <th>ProcessId</th>
+                                    <th>ProcessName</th>
+                                    <th>Cpu(%)</th>
+                                    <th>Memory(Mb)</th>
+                                </tr>
+                                </tfoot>
+                                <tbody id="processStates">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.container-fluid -->
+
+        </div>
+        <!-- End of Main Content -->
+    </div>
+    <!-- End of Content Wrapper -->
+
+</div>
+<div id="highLoadModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <span class="close" >&times;</span>
+        <p id="modalMessage" style="color: red; align-self: center"></p>
+       
+    </div>
+</div>
+    <script src="js/modal.js" asp-append-version="true"></script>
+    <script src="js/process-states.js" asp-append-version="true"></script>
+    <script src="js/websocket.js" asp-append-version="true"></script>
 </body>
 </html>

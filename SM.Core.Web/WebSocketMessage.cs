@@ -13,7 +13,12 @@ namespace SM.Core.Web
         public WebSocketMessage(object data)
         {
             MessageType = data.GetType().Name;
-            Data = JsonSerializer.Serialize(data);
+
+            var serializeOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            };
+            Data = JsonSerializer.Serialize(data, serializeOptions);
         }
 
         /// <summary>

@@ -16,9 +16,6 @@ namespace SystemMonitoringApplication
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IMessageProcessor, WebSocketMessageProcessor>();
-            services.AddSingleton<WebSocketMessageManager>();
-            services.AddGrpc();
             services.AddSingleton<MonitorService<MonitorSystemInfo, ProcessStateHandler>>();
             services.AddTransient<IMonitorService>(provider =>
                 Environment.OSVersion.Platform switch
@@ -27,8 +24,15 @@ namespace SystemMonitoringApplication
                     _ => throw new NotImplementedException($"Реализация {nameof(IMonitorService)} для платформы {Environment.OSVersion.Platform} отсутствует!")
                 }
             );
-
             services.AddHostedService<SystemMonitoringBackgroundWorker>();
+
+
+            services.AddSingleton<IMessageProcessor, WebSocketMessageProcessor>();
+            //интерфейсы доступа
+            services.AddSingleton<WebSocketMessageManager>();
+            services.AddControllers();
+            services.AddGrpc();
+            
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -37,19 +41,20 @@ namespace SystemMonitoringApplication
             {
                 app.UseDeveloperExceptionPage();
             }
-            
+
+            app.UseHttpsRedirection();
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGrpcService<SystemMonitoringGrpcService>();
+                endpoints.MapControllers();
             });
 
             app.UseWebSockets();
             app.Map("/ws", x => x.UseMiddleware<WebSocketMessageMiddleware>());
             app.UseDefaultFiles();
             app.UseStaticFiles();
-            
         }
     }
 }

@@ -1,13 +1,11 @@
 syntax = "proto3";
 
 option csharp_namespace = "SystemMonitoringApplication";
-
+import "google/protobuf/empty.proto";
 package MonitorProcess;
 
 service ProcessMonitor {
-  rpc GetProcessStates (Empty) returns (ProcessStates);
-}
-message Empty {
+  rpc GetProcessStates (google.protobuf.Empty) returns (ProcessStates);
 }
 
 message ProcessStates {

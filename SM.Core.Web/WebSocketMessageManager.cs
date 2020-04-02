@@ -82,7 +82,13 @@ namespace SM.Core.Web
                 return Task.CompletedTask;
 
             var webMessage = new WebSocketMessage(message);
-            var messageJson = JsonSerializer.Serialize(webMessage);
+
+            var serializeOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            };
+
+            var messageJson = JsonSerializer.Serialize(webMessage, serializeOptions);
 
             var byteArray = Encoding.ASCII.GetBytes(messageJson);
 

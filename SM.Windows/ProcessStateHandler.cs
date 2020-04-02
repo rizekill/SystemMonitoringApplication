@@ -37,9 +37,16 @@ namespace SM.Windows
         {
             try
             {
+                (double cpu, double memory) lastState = (ProcessState.Cpu, ProcessState.Memory);
+
                 ProcessState.Cpu = Math.Round(_cpuPerformanceCounter.NextValue() / Environment.ProcessorCount, 2);
                 //приводим к Mb
                 ProcessState.Memory = Math.Round(_ramPerformanceCounter.NextValue() / 1024 / 1024, 2);
+
+                //Если состояние не изменилось, ничего не делаем
+                if (ProcessState.Cpu.Equals(lastState.cpu)
+                    && ProcessState.Memory.Equals(lastState.memory))
+                    return;
 
                 OnStateRefreshed?.Invoke(this, EventArgs.Empty);
             }
