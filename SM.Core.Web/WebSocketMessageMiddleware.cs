@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using SM.Contracts.Commands;
+using SM.Core.Web.Commands;
 
 namespace SM.Core.Web
 {

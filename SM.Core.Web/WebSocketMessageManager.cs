@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using SM.Contracts.Commands;
+using SM.Core.Web.Commands;
 
 namespace SM.Core.Web
 {

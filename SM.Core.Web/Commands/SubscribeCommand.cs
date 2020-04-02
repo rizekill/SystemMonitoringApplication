@@ -1,11 +1,9 @@
-using SM.Core;
-
-namespace SM.Contracts.Commands
+namespace SM.Core.Web.Commands
 {
     /// <summary>
     /// Команда для подписки на тип сообщения
     /// </summary>
-    public class UnsubscribeCommand : IMessage
+    public class SubscribeCommand : IMessage
     {
         /// <summary>
         /// Тип сообщения

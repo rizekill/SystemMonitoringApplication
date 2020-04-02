@@ -4,26 +4,6 @@
         <name>SM.Contracts</name>
     </assembly>
     <members>
-        <member name="T:SM.Contracts.Commands.SubscribeCommand">
-            <summary>
-            Команда для подписки на тип сообщения
-            </summary>
-        </member>
-        <member name="P:SM.Contracts.Commands.SubscribeCommand.MessageType">
-            <summary>
-            Тип сообщения
-            </summary>
-        </member>
-        <member name="T:SM.Contracts.Commands.UnsubscribeCommand">
-            <summary>
-            Команда для подписки на тип сообщения
-            </summary>
-        </member>
-        <member name="P:SM.Contracts.Commands.UnsubscribeCommand.MessageType">
-            <summary>
-            Тип сообщения
-            </summary>
-        </member>
         <member name="T:SM.Contracts.Events.HighLoadEvent">
             <summary>
             Событие о высокой нагрузке в системе
