@@ -1,5 +1,4 @@
-﻿
-var wsUri = "ws://localhost:63572/ws";
+﻿const wsUri = "ws://localhost:63572/ws";
 socket = new WebSocket(wsUri);
 
     socket.onopen = function(e) {
@@ -18,16 +17,16 @@ socket = new WebSocket(wsUri);
         const message = JSON.parse(event.data);
 
         switch (message.messageType) {
-            case 'HighLoadEvent':
+            case "HighLoadEvent":
                 onHighLoad(JSON.parse(message.data));
                 break;
-            case 'ProcessObserveCompleteEvent':
+            case "ProcessObserveCompleteEvent":
                 removeProcess(JSON.parse(message.data).processState);
                 break;
-            case 'ProcessObserveOpenEvent':
+            case "ProcessObserveOpenEvent":
                 insertProcessState(JSON.parse(message.data).processState);
                 break;
-            case 'ProcessStateUpdateEvent':
+            case "ProcessStateUpdateEvent":
                 updateProcessState(JSON.parse(message.data).processState);
                 break;
         }

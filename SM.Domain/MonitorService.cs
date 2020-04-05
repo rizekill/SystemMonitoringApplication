@@ -24,7 +24,6 @@ namespace SM.Domain
             _messageProcessor = messageProcessor;
             _observedProcesses = new ConcurrentDictionary<string, ProcessStateHandlerBase>();
             MonitorSystemInfo = new TMonitorSystemInfo();
-
         }
 
         /// <summary>
@@ -61,12 +60,11 @@ namespace SM.Domain
         /// <summary>
         /// Остановить мониторинг
         /// </summary>
-        public void Stop()
+        public Task Stop()
         {
             MonitorSystemInfo.OnHighLoaded -= OnHighLoad;
 
-            foreach (var observedProcess in _observedProcesses)
-                CloseProcessObserver(processName: observedProcess.Key);
+            return Task.WhenAll(_observedProcesses.Select(process => CloseProcessObserver(processName: process.Key)));
         }
 
         /// <summary>
@@ -94,7 +92,7 @@ namespace SM.Domain
                         process.Value.RefreshState();
                         MonitorSystemInfo.Refresh();
                     }
-            });
+            }, cancellationToken);
 
         /// <summary>
         /// Запустить добавление новых процессов для мониторинга
@@ -131,7 +129,7 @@ namespace SM.Domain
                         currentProcess.Disposed += OnCloseProcess;
                     }
                 }
-            });
+            }, cancellationToken);
 
         ///// <summary>
         ///// Срабатывает при появлении высокой нагрузки 
@@ -167,23 +165,23 @@ namespace SM.Domain
             };
 
             // Убираем процесс из наблюдения
-            CloseProcessObserver(processName);
+            CloseProcessObserver(processName).GetAwaiter().GetResult();
         }
 
         /// <summary>
         /// Завершить наблюдение за процессом
         /// </summary>
         /// <param name="processName">Наименование процесса</param>
-        private void CloseProcessObserver(string processName)
+        private Task CloseProcessObserver(string processName)
         {
             // Убираем процесс из наблюдения
             if (!_observedProcesses.TryRemove(processName, out var processHandler))
-                return;
+                return Task.CompletedTask;
 
             processHandler.OnStateRefreshed -= OnProcessStateUpdate;
             processHandler.OnClosed -= OnCloseProcess;
             //оповещаем о завершении наблюдения за процессом
-            _messageProcessor.Publish(new ProcessObserveCompleteEvent(processHandler.ProcessState));
+            return _messageProcessor.Publish(new ProcessObserveCompleteEvent(processHandler.ProcessState));
         }
     }
 }

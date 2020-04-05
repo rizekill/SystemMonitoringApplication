@@ -5,22 +5,40 @@ using SM.Domain.Interfaces;
 
 namespace SystemMonitoringApplication
 {
-    public class SystemMonitoringBackgroundWorker : BackgroundService
+    public class SystemMonitoringBackgroundWorker : IHostedService
     {
+        private readonly IHostApplicationLifetime _appLifetime;
         private readonly IMonitorService _service;
+        private readonly CancellationTokenSource _cancellationTokenSource;
 
-        public SystemMonitoringBackgroundWorker(IMonitorService service) => _service = service;
-
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
-            => _service.Start(stoppingToken);
-
-        public override Task StopAsync(CancellationToken cancellationToken)
+        public SystemMonitoringBackgroundWorker(IMonitorService service, IHostApplicationLifetime appLifetime)
         {
-            base.StopAsync(cancellationToken);
+            _service = service;
+            _appLifetime = appLifetime;
+            _cancellationTokenSource = new CancellationTokenSource();
+        }
 
-            _service.Stop();
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            _appLifetime.ApplicationStarted.Register(OnStarted);
+            _appLifetime.ApplicationStopping.Register(OnStopping);
 
             return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+            => Task.CompletedTask;
+
+        private void OnStarted()
+            => _service.Start(_cancellationTokenSource.Token)
+                .GetAwaiter()
+                .GetResult();
+
+
+        private void OnStopping()
+        {
+            _cancellationTokenSource.Cancel();
+            _service.Stop().GetAwaiter().GetResult();
         }
     }
 }

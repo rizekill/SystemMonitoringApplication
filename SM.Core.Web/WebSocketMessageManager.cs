@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 using SM.Core.Web.Commands;
 
 namespace SM.Core.Web
@@ -16,6 +17,11 @@ namespace SM.Core.Web
     /// </summary>
     public class WebSocketMessageManager
     {
+        public WebSocketMessageManager(IHostApplicationLifetime hostApplicationLifetime)
+        {
+            hostApplicationLifetime.ApplicationStopping.Register(OnStopping);
+        }
+
         private readonly ConcurrentDictionary<WebSocket, List<string>> _connectionSockets =
             new ConcurrentDictionary<WebSocket, List<string>>();
 
@@ -34,6 +40,9 @@ namespace SM.Core.Web
         public Task RemoveConnection(WebSocket webSocket)
         {
             _connectionSockets.TryRemove(webSocket, out var messageTypes);
+
+            if (webSocket.State == WebSocketState.Closed)
+                return Task.CompletedTask;
 
             return webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "WebSocket connection closed",
                 CancellationToken.None);
@@ -97,5 +106,12 @@ namespace SM.Core.Web
             return Task.WhenAll(sockets.Select(x => x.Key
                 .SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None)));
         }
+
+        /// <summary>
+        /// При событии завершения приложения, закрываем все соединения
+        /// </summary>
+        private void OnStopping()
+            => Task.WhenAll(_connectionSockets
+                .Select(x => RemoveConnection(x.Key))).GetAwaiter().GetResult();
     }
 }

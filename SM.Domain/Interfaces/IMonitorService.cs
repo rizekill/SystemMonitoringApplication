@@ -15,7 +15,7 @@ namespace SM.Domain.Interfaces
         /// <summary>
         /// Остановить мониторинг
         /// </summary>
-        void Stop();
+        Task Stop();
 
         /// <summary>
         /// Получить состояния процессов

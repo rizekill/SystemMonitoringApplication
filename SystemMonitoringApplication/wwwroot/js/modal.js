@@ -1,8 +1,8 @@
-﻿var modal = document.getElementById("highLoadModal");
+﻿const modal = document.getElementById("highLoadModal");
 function viewModal(data) {
-    var modalMessage = document.getElementById("modalMessage");
+    const modalMessage = document.getElementById("modalMessage");
     modalMessage.innerText = `HighLoad system state: TotalCpuUsagePercent(${data.systemInfo.totalCpuUsagePercent}) TotalMemoryUsagePercent(${data.systemInfo.totalMemoryUsagePercent}) TotalMemoryUsageMb(${data.systemInfo.totalMemoryUsageMb})`;
-    var modal = document.getElementById("highLoadModal");
+    const modal = document.getElementById("highLoadModal");
     modal.style.display = "block";
 }
 
@@ -13,7 +13,7 @@ span.onclick = function() {
 };
 
 window.onclick = function (event) {
-    if (event.target == modal) {
+    if (event.target === modal) {
         modal.style.display = "none";
     }
 }
